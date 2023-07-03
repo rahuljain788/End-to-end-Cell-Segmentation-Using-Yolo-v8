@@ -1,11 +1,10 @@
 from cellSegmentation.logger import logging
 from cellSegmentation.exception import AppException
-
 import sys
 
-logging.info("Test Log 3")
+from cellSegmentation.pipeline.training_pipeline import TrainingPipeline
 
-try:
-    a = 4/"6"
-except Exception as e:
-    raise AppException(e,sys)
+obj = TrainingPipeline()
+obj.run_pipeline()
+print("Training Done")
+
