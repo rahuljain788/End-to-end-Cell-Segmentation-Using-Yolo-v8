@@ -3,7 +3,7 @@ from cellSegmentation.logger import logging
 from cellSegmentation.exception import AppException
 from cellSegmentation.components.data_ingestion import DataIngestion
 from cellSegmentation.components.data_validation import DataValidation
-from cellSegmentation.components.model_trainer import ModelTrainer
+from cellSegmentation.components.model_trainer import YoloV8ModelTrainer
 from cellSegmentation.entity.config_entity import DataIngestionConfig, DataValidationConfig, ModelTrainerConfig
 from cellSegmentation.entity.artifacts_entity import DataIngestionArtifact, DataValidationArtifact, ModelTrainerArtifact
 
@@ -63,10 +63,10 @@ class TrainingPipeline:
     def start_model_trainer(self
     ) -> ModelTrainerArtifact:
         try:
-            model_trainer = ModelTrainer(
+            yolov8_model_trainer = YoloV8ModelTrainer(
                 model_trainer_config=self.model_trainer_config,
             )
-            model_trainer_artifact = model_trainer.initiate_model_trainer()
+            model_trainer_artifact = yolov8_model_trainer.initiate_model_trainer()
             return model_trainer_artifact
 
         except Exception as e:

@@ -10,7 +10,7 @@ import re
 from ultralytics import YOLO
 
 
-class ModelTrainer:
+class YoloV8ModelTrainer:
     def __init__(
             self,
             model_trainer_config: ModelTrainerConfig,
