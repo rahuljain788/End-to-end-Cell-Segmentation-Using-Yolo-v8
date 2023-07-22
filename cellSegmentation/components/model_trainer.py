@@ -6,6 +6,7 @@ from cellSegmentation.exception import AppException
 from cellSegmentation.entity.config_entity import ModelTrainerConfig
 from cellSegmentation.entity.artifacts_entity import ModelTrainerArtifact
 import mlflow
+import re
 from ultralytics import YOLO
 
 
@@ -37,10 +38,11 @@ class ModelTrainer:
                 imgsz=640,
                 plots=True
             )
-
+            metrics_dict = {f"{re.sub('[()]', '', k)}": float(v) for k, v in model.trainer.metrics.items()}
+            mlflow.log_metrics(metrics=metrics_dict, step=model.trainer.epoch)
             mlflow.log_artifact('runs/segment/train/confusion_matrix.png')
             mlflow.log_artifact('runs/segment/train/results.csv')
-            mlflow.log_artifacts("runs/segment/train/weights/best.pt")
+            mlflow.log_artifact("runs/segment/train/weights/best.pt")
             mlflow.log_param("epochs", self.model_trainer_config.no_epochs)
             mlflow.log_param("model", self.model_trainer_config.weight_name)
 
