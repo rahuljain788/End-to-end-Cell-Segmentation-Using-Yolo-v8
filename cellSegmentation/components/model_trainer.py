@@ -8,6 +8,7 @@ from cellSegmentation.entity.artifacts_entity import ModelTrainerArtifact
 import mlflow
 from ultralytics import YOLO
 
+
 class ModelTrainer:
     def __init__(
             self,
@@ -15,6 +16,9 @@ class ModelTrainer:
     ):
         self.model_trainer_config = model_trainer_config
         mlflow.set_experiment("ultralytics/yolov8")
+        mlflow_location = os.environ['MLFLOW_TRACKING_URI']
+        print("********** ", mlflow_location)
+        mlflow.set_tracking_uri(mlflow_location)
         mlflow.start_run()
 
     def initiate_model_trainer(self, ) -> ModelTrainerArtifact:
@@ -31,22 +35,19 @@ class ModelTrainer:
                 data="data.yaml",
                 epochs=self.model_trainer_config.no_epochs,
                 imgsz=640,
+                plots=True
             )
 
-            # Validate the model
-            metrics = model.val()  # no arguments needed, dataset and settings remembered
-            mlflow.log_metric("map",metrics.box.map)  # map50-95
-            mlflow.log_metric("map50", metrics.box.map50)
-            mlflow.log_metric("map75", metrics.box.map75)
-            mlflow.log_metric("maps", metrics.box.maps)
+            mlflow.log_artifact('runs/segment/train/confusion_matrix.png')
+            mlflow.log_artifact('runs/segment/train/results.csv')
+            mlflow.log_artifacts("runs/segment/train/weights/best.pt")
+            mlflow.log_param("epochs", self.model_trainer_config.no_epochs)
+            mlflow.log_param("model", self.model_trainer_config.weight_name)
 
             # os.system(
             #     f"yolo task=segment mode=train model={self.model_trainer_config.weight_name} "
             #     f"data=data.yaml epochs={self.model_trainer_config.no_epochs} imgsz=640 save=true"
             # )
-
-            mlflow.log_param("epochs", self.model_trainer_config.no_epochs)
-            mlflow.log_param("model", self.model_trainer_config.weight_name)
 
             os.makedirs(self.model_trainer_config.model_trainer_dir, exist_ok=True)
             os.system(f"cp runs/segment/train/weights/best.pt {self.model_trainer_config.model_trainer_dir}/")
