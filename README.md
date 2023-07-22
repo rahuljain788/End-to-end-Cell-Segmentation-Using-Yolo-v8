@@ -7,10 +7,10 @@ Source: https://youtu.be/eiK-6ZhphiA
 
 ![img_1.png](img_1.png)
 
-Pre-requisite:
-export MLFLOW_TRACKING_URI=https://dagshub.com/rahuljain788/End-to-end-Cell-Segmentation-Using-Yolo-v8.mlflow
-export MLFLOW_TRACKING_USERNAME=rahuljain788
-export MLFLOW_TRACKING_PASSWORD=72e53111d7e4798851db94cb56559e126a3a5b18
+### Pre-requisite:
+    export MLFLOW_TRACKING_URI=https://dagshub.com/rahuljain788/End-to-end-Cell-Segmentation-Using-Yolo-v8.mlflow
+    export MLFLOW_TRACKING_USERNAME=rahuljain788
+    export MLFLOW_TRACKING_PASSWORD=72e53111d7e4798851db94cb56559e126a3a5b18
 
 ### Step 1: Define constants --> cellSegmentation/constant/training_pipeline/__init__.py
 	ARTIFACTS_DIR: str = "artifacts"
