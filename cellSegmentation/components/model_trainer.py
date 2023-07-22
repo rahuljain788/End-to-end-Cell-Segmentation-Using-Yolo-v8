@@ -5,7 +5,8 @@ from cellSegmentation.logger import logging
 from cellSegmentation.exception import AppException
 from cellSegmentation.entity.config_entity import ModelTrainerConfig
 from cellSegmentation.entity.artifacts_entity import ModelTrainerArtifact
-
+import mlflow
+from ultralytics import YOLO
 
 class ModelTrainer:
     def __init__(
@@ -13,6 +14,8 @@ class ModelTrainer:
             model_trainer_config: ModelTrainerConfig,
     ):
         self.model_trainer_config = model_trainer_config
+        mlflow.set_experiment("ultralytics/yolov8")
+        mlflow.start_run()
 
     def initiate_model_trainer(self, ) -> ModelTrainerArtifact:
         logging.info("Entered initiate_model_trainer method of ModelTrainer class")
@@ -21,9 +24,29 @@ class ModelTrainer:
             logging.info("Unzipping data")
             os.system("unzip data.zip")
             os.system("rm data.zip")
+            model = YOLO(self.model_trainer_config.weight_name)
+            results = model.train(
+                batch=8,
+                device="cpu",
+                data="data.yaml",
+                epochs=self.model_trainer_config.no_epochs,
+                imgsz=640,
+            )
 
-            os.system(
-                f"yolo task=segment mode=train model={self.model_trainer_config.weight_name} data=data.yaml epochs={self.model_trainer_config.no_epochs} imgsz=640 save=true")
+            # Validate the model
+            metrics = model.val()  # no arguments needed, dataset and settings remembered
+            mlflow.log_metric("map",metrics.box.map)  # map50-95
+            mlflow.log_metric("map50", metrics.box.map50)
+            mlflow.log_metric("map75", metrics.box.map75)
+            mlflow.log_metric("maps", metrics.box.maps)
+
+            # os.system(
+            #     f"yolo task=segment mode=train model={self.model_trainer_config.weight_name} "
+            #     f"data=data.yaml epochs={self.model_trainer_config.no_epochs} imgsz=640 save=true"
+            # )
+
+            mlflow.log_param("epochs", self.model_trainer_config.no_epochs)
+            mlflow.log_param("model", self.model_trainer_config.weight_name)
 
             os.makedirs(self.model_trainer_config.model_trainer_dir, exist_ok=True)
             os.system(f"cp runs/segment/train/weights/best.pt {self.model_trainer_config.model_trainer_dir}/")
@@ -42,6 +65,7 @@ class ModelTrainer:
             logging.info("Exited initiate_model_trainer method of ModelTrainer class")
             logging.info(f"Model trainer artifact: {model_trainer_artifact}")
 
+            mlflow.end_run()
             return model_trainer_artifact
 
         except Exception as e:
