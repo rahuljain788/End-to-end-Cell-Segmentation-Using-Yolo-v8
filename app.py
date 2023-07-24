@@ -7,9 +7,9 @@
 # obj = TrainingPipeline()
 # obj.run_pipeline()
 # print("Training Done")
-
-
+import logging
 import sys,os
+from cellSegmentation.logger import logging
 from cellSegmentation.pipeline.training_pipeline import TrainingPipeline
 from cellSegmentation.utils.main_utils import decodeImage, encodeImageIntoBase64
 from flask import Flask, request, jsonify, render_template,Response
@@ -53,7 +53,8 @@ def home():
 @cross_origin()
 def predictRoute_tf():
     try:
-        result =  "No Prediction/Training for Tensorflow!!"
+        logging.info("No Prediction/Training for Tensorflow!!")
+        result = "No Prediction/Training for Tensorflow!!"
     except ValueError as val:
         print(val)
         return Response("Value not found inside  json data")
@@ -63,7 +64,7 @@ def predictRoute_tf():
         print(e)
         result = "Invalid input"
 
-    return jsonify(result)
+    return result
 
 
 @app.route("/predict/yolo", methods=['POST','GET'])
