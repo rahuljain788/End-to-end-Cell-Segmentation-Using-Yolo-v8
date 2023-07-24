@@ -15,7 +15,7 @@ from cellSegmentation.utils.main_utils import decodeImage, encodeImageIntoBase64
 from flask import Flask, request, jsonify, render_template,Response
 from flask_cors import CORS, cross_origin
 from cellSegmentation.constant.application import APP_HOST, APP_PORT
-
+import mlflow
 
 app = Flask(__name__)
 CORS(app)
@@ -34,17 +34,52 @@ def trainRoute():
     return "Training Successfull!!"
 
 
+@app.route("/yolo")
+def home_yolo():
+    return render_template("index-yolo.html")
+
+
+@app.route("/tf")
+def home_tf():
+    return render_template("index-tf.html")
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-@app.route("/predict", methods=['POST','GET'])
+@app.route("/predict/tf", methods=['POST','GET'])
 @cross_origin()
-def predictRoute():
+def predictRoute_tf():
+    try:
+        result =  "No Prediction/Training for Tensorflow!!"
+    except ValueError as val:
+        print(val)
+        return Response("Value not found inside  json data")
+    except KeyError:
+        return Response("Key value error incorrect key passed")
+    except Exception as e:
+        print(e)
+        result = "Invalid input"
+
+    return jsonify(result)
+
+
+@app.route("/predict/yolo", methods=['POST','GET'])
+@cross_origin()
+def predictRoute_yolo():
     try:
         image = request.json['image']
         decodeImage(image, clApp.filename)
+
+        experiment_name = "ultralytics/yolov8"
+        current_experiment = dict(mlflow.get_experiment_by_name(experiment_name))
+        experiment_id = current_experiment['experiment_id']
+        df = mlflow.search_runs([experiment_id], order_by=["metrics.rmse DESC"])
+        best_run_id = df.loc[0, 'run_id']
+        mlflow.artifacts.download_artifacts(run_id=best_run_id, artifact_path='best.pt',
+                                            dst_path=os.path.join(os.getcwd(), 'artifacts/model_trainer'))
 
         os.system("yolo task=segment mode=predict model=artifacts/model_trainer/best.pt conf=0.25 source=data/inputImage.jpg save=true")
 
