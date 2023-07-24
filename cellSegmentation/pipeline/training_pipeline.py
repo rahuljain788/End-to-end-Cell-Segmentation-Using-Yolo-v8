@@ -60,19 +60,20 @@ class TrainingPipeline:
         except Exception as e:
             raise AppException(e, sys) from e
 
-    def start_model_trainer(self
-    ) -> ModelTrainerArtifact:
+    def start_model_trainer(self, model_type: str) -> ModelTrainerArtifact:
         try:
-            yolov8_model_trainer = YoloV8ModelTrainer(
-                model_trainer_config=self.model_trainer_config,
-            )
-            model_trainer_artifact = yolov8_model_trainer.initiate_model_trainer()
+            model_trainer_artifact: ModelTrainerArtifact
+            if model_type.lower() == "yolov8":
+                yolov8_model_trainer = YoloV8ModelTrainer(
+                    model_trainer_config=self.model_trainer_config,
+                )
+                model_trainer_artifact = yolov8_model_trainer.initiate_model_trainer()
             return model_trainer_artifact
 
         except Exception as e:
             raise AppException(e, sys)
 
-    def run_pipeline(self) -> None:
+    def run_pipeline(self, model_type: str) -> None:
         try:
             data_ingestion_artifact = self.start_data_ingestion()
             data_validation_artifact = self.start_data_validation(
@@ -80,7 +81,7 @@ class TrainingPipeline:
             )
 
             if data_validation_artifact.validation_status:
-                model_trainer_artifact = self.start_model_trainer()
+                model_trainer_artifact = self.start_model_trainer(model_type)
 
             else:
                 raise Exception("Your data is not in correct format")
