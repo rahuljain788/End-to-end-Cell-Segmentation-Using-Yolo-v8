@@ -81,11 +81,12 @@ def predictRoute_yolo():
         mlflow.artifacts.download_artifacts(run_id=best_run_id, artifact_path='best.pt',
                                             dst_path=os.path.join(os.getcwd(), 'artifacts/model_trainer'))
 
-        os.system("yolo task=segment mode=predict model=artifacts/model_trainer/best.pt conf=0.25 source=data/inputImage.jpg save=true")
+        os.system("yolo task=detect mode=predict model=artifacts/model_trainer/best.pt conf=0.25 source=data/inputImage.jpg save=true")
 
         opencodedbase64 = encodeImageIntoBase64("runs/segment/predict/inputImage.jpg")
         result = {"image": opencodedbase64.decode('utf-8')}
         os.system("rm -rf runs")
+        os.system("rm -rf data")
 
     except ValueError as val:
         print(val)
