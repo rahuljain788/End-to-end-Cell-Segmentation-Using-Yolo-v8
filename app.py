@@ -81,7 +81,7 @@ def predictRoute_yolo():
         best_run_id = df.loc[0, 'run_id']
         mlflow.artifacts.download_artifacts(run_id=best_run_id, artifact_path='best.pt',
                                             dst_path=os.path.join(os.getcwd(), 'artifacts/model_trainer'))
-
+        logging.info("Starting Prediction...")
         os.system("yolo task=detect mode=predict model=artifacts/model_trainer/best.pt conf=0.25 source=data/inputImage.jpg save=true")
 
         opencodedbase64 = encodeImageIntoBase64("runs/segment/predict/inputImage.jpg")
